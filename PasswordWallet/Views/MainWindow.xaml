@@ -1,0 +1,58 @@
+﻿<Window x:Class="PasswordWallet.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:PasswordWallet"
+        mc:Ignorable="d"
+        Title="Password Wallet" Height="320" Width="350">
+    <Grid Background="#474747">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="1.6*" />
+            <RowDefinition Height="2*" />
+            <RowDefinition Height="1.8*" />
+        </Grid.RowDefinitions>
+        <Label Grid.Row="0"
+               Content="Password Wallet"
+               HorizontalAlignment="Center"
+               VerticalAlignment="Center"
+               Width="350"
+               Height="100"
+               FontWeight="Black"
+               FontFamily="Baskerville Old Face"
+               FontSize="44"
+               HorizontalContentAlignment="Center"
+               VerticalContentAlignment="Center"/>
+        <TextBox Grid.Row="1"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Top"
+                   VerticalContentAlignment="Center"
+                   Width="200"
+                   Height="35"
+                   Margin="0 14 0 0"
+                   Background="#333333"
+                   BorderBrush="#333333"></TextBox>
+        <PasswordBox Grid.Row="1"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Bottom"
+                   VerticalContentAlignment="Center"
+                   Width="200"
+                   Height="35"
+                   Margin="0 0 0 10"
+                   IsEnabled="True"
+                   Background="#333333"
+                   BorderBrush="#333333"></PasswordBox>
+        <Button Grid.Row="2"
+                Background="#333333"
+                HorizontalAlignment="Center"
+                VerticalAlignment="top"
+                Margin="0 20 0 0"
+                Width="200"
+                Height="40"
+                Content="Zaloguj"
+                FontFamily="Baskerville Old Face"
+                FontSize="13"
+                BorderBrush="#333333"></Button>
+        <!--Foreground="#6e6e6e"-->
+    </Grid>
+</Window>
