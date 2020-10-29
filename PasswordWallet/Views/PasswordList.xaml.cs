@@ -15,11 +15,11 @@ using System.Windows.Shapes;
 namespace PasswordWallet.Views
 {
     /// <summary>
-    /// Interaction logic for Window1.xaml
+    /// Interaction logic for PasswordList.xaml
     /// </summary>
-    public partial class Window1 : Window
+    public partial class PasswordList : Window
     {
-        public Window1()
+        public PasswordList()
         {
             InitializeComponent();
         }

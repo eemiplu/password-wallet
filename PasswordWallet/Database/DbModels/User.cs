@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -7,6 +8,16 @@ namespace PasswordWallet.DbModels
     [Table("Users")]
     public class User
     {
+        public User() { }
+
+        public User(String login, String passwordHash, String salt, bool isPasswordStoredAsHash)
+        {
+            Login = login;
+            PasswordHash = passwordHash;
+            Salt = salt;
+            IsPasswordStoredAsHash = isPasswordStoredAsHash;
+        }
+
         [Key]
         [Required]
         [Column("Id", Order = 0)]
