@@ -1,10 +1,7 @@
 ﻿using PasswordWallet.DbModels;
 using System;
-using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 
 namespace PasswordWallet.Controllers
@@ -24,7 +21,7 @@ namespace PasswordWallet.Controllers
                     db.Users.Add(user);
                     db.SaveChanges();
 
-                    return db.Users.First(u => u.Login == user.Login);
+                    return user;
                 }
 
                 return null;
@@ -37,7 +34,7 @@ namespace PasswordWallet.Controllers
             }
         }
 
-        public void UpdateUser(User user)
+        public User UpdateUser(User user)
         {
             try
             {
@@ -45,27 +42,26 @@ namespace PasswordWallet.Controllers
 
                 if (foundUser == null)
                 {
-                    //return null;  //TODO - co zwracać z funkcji
+                    return null;
                 }
 
                 db.Entry(user).State = EntityState.Modified;
 
                 db.SaveChanges();
 
-                //return - TODO
+                return user;
             }
             catch (Exception ex)
             {
                 MessageBox.Show("Exception occured: " + ex.Message, "Updating user failed", MessageBoxButton.OK, MessageBoxImage.Warning);
-                //return null;
             }
+
+            return null;
         }
 
         public User GetUser(String login)
         {
             var foundUser = db.Users.FirstOrDefault(u => u.Login == login);
-
-            //foundUser = foundUser != null ? foundUser : new User();
 
             return foundUser; 
         }

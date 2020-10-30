@@ -2,10 +2,6 @@
 using PasswordWallet.Cryptography;
 using PasswordWallet.DbModels;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace PasswordWallet.Logic
 {
@@ -30,9 +26,9 @@ namespace PasswordWallet.Logic
 
             user = new User(login, encryptedPassword, salt, passwordShouldBeKeptAsHash);
 
-            _usersController.AddUser(user);
+            user = _usersController.AddUser(user);
 
-            return _usersController.GetUser(login);
+            return user;
         }
 
         public static User CheckLoginData(String login, String password)
@@ -56,9 +52,34 @@ namespace PasswordWallet.Logic
             return user;
         }
 
-        public static void ChangePassword(User user, String password)
+        public static User ChangePassword(String password, bool passwordShouldBeKeptAsHash)
         {
-            //zabawa hasłem tak samo jak przy register i login + zmiana wszystkich haseł w portfelu i zmiana soli jeśli hash/nie hash
+            User user = _usersController.GetUser(Storage.GetUser().Login);
+            String oldSalt = user.Salt;
+            String newSalt;
+            EncryptionManager encryptionManager = new EncryptionManager();
+            String encryptedPassword = "";
+
+            if (user == null)
+            {
+                return user;
+            }
+
+            newSalt = encryptionManager.GenerateSalt();
+            encryptedPassword = encryptionManager.EncryptPassword(password, passwordShouldBeKeptAsHash, newSalt);
+
+            user.PasswordHash = encryptedPassword;
+            user.Salt = newSalt;
+            user.IsPasswordStoredAsHash = passwordShouldBeKeptAsHash;
+
+            user = _usersController.UpdateUser(user);
+
+            Storage.DeleteUser();
+            Storage.CreateUser(user);
+
+            PasswordsManagement.UpdateAllUserPasswords(oldSalt, newSalt);
+
+            return user;
         }
     }
 }

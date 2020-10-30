@@ -6,12 +6,12 @@ using PasswordWallet.Logic;
 
 namespace PasswordWallet
 {
-    public partial class MainWindow : Window
+    public partial class LoginWindow : Window
     {
         String _login;
         String _password;
 
-        public MainWindow()
+        public LoginWindow()
         {
             InitializeComponent();
 
@@ -47,9 +47,11 @@ namespace PasswordWallet
                 return false;
             }
 
-            if (UserManagement.CheckLoginData(_login.Trim(), _password) != null)
+            User user = UserManagement.CheckLoginData(_login.Trim(), _password);
+
+            if (user != null)
             {
-                //store user
+                Storage.CreateUser(user);
                 return true;
             }
 

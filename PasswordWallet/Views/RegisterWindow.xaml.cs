@@ -1,5 +1,4 @@
-﻿using PasswordWallet.DbModels;
-using PasswordWallet.Logic;
+﻿using PasswordWallet.Logic;
 using System;
 using System.Windows;
 
@@ -31,7 +30,7 @@ namespace PasswordWallet.Views
 
             if (UserManagement.RegisterNewUser(_login.Trim(), _password, _passwordShouldBeStoredAsHash) != null)
             {
-                MainWindow window = new MainWindow();
+                LoginWindow window = new LoginWindow();
                 window.Show();
                 this.Close();
             }
