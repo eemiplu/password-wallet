@@ -1,4 +1,5 @@
-﻿using System;
+﻿using PasswordWallet.Database.DbModels;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -37,6 +38,11 @@ namespace PasswordWallet.DbModels
         [Column("IsPasswordStoredAsHash", Order = 4)]
         public bool IsPasswordStoredAsHash { get; set; }
 
+        [Required]
+        [Column("IncorrectLogins", Order = 5)]
+        public int IncorrectLogins { get; set; } = 0;
+
         public ICollection<Password> Passwords { get; set; }
+        public ICollection<Login> Logins { get; set; }
     }
 }

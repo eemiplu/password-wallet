@@ -3,6 +3,9 @@ using System.Windows;
 using PasswordWallet.DbModels;
 using PasswordWallet.Views;
 using PasswordWallet.Logic;
+using PasswordWallet.Cryptography;
+using System.Net.Sockets;
+using System.Net;
 
 namespace PasswordWallet
 {
@@ -28,6 +31,8 @@ namespace PasswordWallet
 
         private void LogInButton_Click(object sender, RoutedEventArgs e)
         {
+            Storage.GetLocalIP();
+
             _login = LoginTextBox.Text;
             _password = PasswordTextBox.Password;
 

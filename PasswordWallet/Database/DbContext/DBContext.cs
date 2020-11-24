@@ -1,4 +1,5 @@
-﻿using System.Data.Entity;
+﻿using PasswordWallet.Database.DbModels;
+using System.Data.Entity;
 
 namespace PasswordWallet.DbModels
 {
@@ -8,5 +9,7 @@ namespace PasswordWallet.DbModels
 
         public DbSet<User> Users { get; set; }
         public DbSet<Password> Passwords { get; set; }
+        public DbSet<IPAddress> IPAddresses { get; set; }
+        public DbSet<Login> Logins { get; set; }
     }
 }

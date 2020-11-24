@@ -38,6 +38,9 @@ namespace PasswordWallet.Cryptography
 
         public string CalculateSHA512(String text)
         {
+            if (text.Equals(""))
+                throw new ArgumentException();
+
             //calculate SHA512 hash from input
             SHA512 sha512 = SHA512.Create();
             byte[] inputBytes = Encoding.ASCII.GetBytes(text);
@@ -54,6 +57,9 @@ namespace PasswordWallet.Cryptography
 
         public string CalculateHMAC(String text, String key)
         {
+            if (text.Equals("") || key.Equals(""))
+                throw new ArgumentException();
+
             byte[] inputBytes = Encoding.ASCII.GetBytes(text);
             byte[] keyInBytes = Encoding.ASCII.GetBytes(key);
 
@@ -103,6 +109,9 @@ namespace PasswordWallet.Cryptography
 
         public string AESDecrypt(string key, string cipherText)
         {
+            if (cipherText.Length != 24)
+                throw new ArgumentException();
+
             byte[] iv = new byte[16];
             byte[] buffer = Convert.FromBase64String(cipherText);
 
