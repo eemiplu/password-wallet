@@ -11,6 +11,13 @@ namespace PasswordWallet.Database.DbModels
     [Table("IPAddresses")]
     public class IPAddress
     {
+        public IPAddress() { }
+
+        public IPAddress(string ipAddress)
+        {
+            IpAddress = ipAddress;
+        }
+
         [Key]
         [Required]
         [Column("Id", Order = 0)]

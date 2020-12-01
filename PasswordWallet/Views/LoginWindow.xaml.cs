@@ -4,8 +4,8 @@ using PasswordWallet.DbModels;
 using PasswordWallet.Views;
 using PasswordWallet.Logic;
 using PasswordWallet.Cryptography;
-using System.Net.Sockets;
-using System.Net;
+using PasswordWallet.Logic.HelperClasses;
+using PasswordWallet.Database.DbModels;
 
 namespace PasswordWallet
 {
@@ -31,7 +31,10 @@ namespace PasswordWallet
 
         private void LogInButton_Click(object sender, RoutedEventArgs e)
         {
-            Storage.GetLocalIP();
+            string ip = IpManager.GetLocalIP();
+            IpAddressManagement ipManagement = new IpAddressManagement();
+            IPAddress ipAddress = ipManagement.AddNewIp(ip);
+            Storage.IpAddress = ipAddress;
 
             _login = LoginTextBox.Text;
             _password = PasswordTextBox.Password;
@@ -46,13 +49,15 @@ namespace PasswordWallet
 
         private bool VerifyUser()
         {
+            UserManagement userManagement = new UserManagement();
+
             if (!isPasswordValid(_password) || String.IsNullOrEmpty(_login))
             {
                 MessageBox.Show("Fill in the fields correctly. Password must be at least 8 characters long.", "Incorrect data", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return false;
             }
 
-            User user = UserManagement.CheckLoginData(_login.Trim(), _password);
+            User user = userManagement.Login(_login.Trim(), _password);
 
             if (user != null)
             {

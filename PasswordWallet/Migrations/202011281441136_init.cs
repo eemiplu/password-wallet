@@ -3,7 +3,7 @@
     using System;
     using System.Data.Entity.Migrations;
     
-    public partial class Init : DbMigration
+    public partial class init : DbMigration
     {
         public override void Up()
         {
@@ -65,6 +65,16 @@
         
         public override void Down()
         {
+            DropForeignKey("dbo.Logins", "IdUser", "dbo.Users");
+            DropForeignKey("dbo.Passwords", "IdUser", "dbo.Users");
+            DropForeignKey("dbo.Logins", "IdIpAddress", "dbo.IPAddresses");
+            DropIndex("dbo.Passwords", new[] { "IdUser" });
+            DropIndex("dbo.Logins", new[] { "IdIpAddress" });
+            DropIndex("dbo.Logins", new[] { "IdUser" });
+            DropTable("dbo.Passwords");
+            DropTable("dbo.Users");
+            DropTable("dbo.Logins");
+            DropTable("dbo.IPAddresses");
         }
     }
 }

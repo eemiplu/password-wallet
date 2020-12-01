@@ -12,6 +12,16 @@ namespace PasswordWallet.Database.DbModels
     [Table("Logins")]
     public class Login
     {
+        public Login() { }
+
+        public Login(int idUser, DateTime time, int idIpAddress, bool correct = true)
+        {
+            IdUser = idUser;
+            Time = time;
+            IdIpAddress = idIpAddress;
+            Correct = correct;
+        }
+
         [Key]
         [Required]
         [Column("Id", Order = 0)]

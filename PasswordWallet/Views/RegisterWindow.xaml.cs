@@ -19,6 +19,8 @@ namespace PasswordWallet.Views
 
         private void RegisterButton_Click(object sender, RoutedEventArgs e)
         {
+            UserManagement userManagement = new UserManagement();
+
             _login = LoginTextBox.Text;
             _password = PasswordTextBox.Password;
             _passwordShouldBeStoredAsHash = Sha512Radio.IsChecked == true ? true : false;
@@ -28,7 +30,7 @@ namespace PasswordWallet.Views
                 return;
             }
 
-            if (UserManagement.RegisterNewUser(_login.Trim(), _password, _passwordShouldBeStoredAsHash) != null)
+            if (userManagement.RegisterNewUser(_login.Trim(), _password, _passwordShouldBeStoredAsHash) != null)
             {
                 LoginWindow window = new LoginWindow();
                 window.Show();
