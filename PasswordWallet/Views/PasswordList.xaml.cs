@@ -9,12 +9,14 @@ namespace PasswordWallet.Views
 {
     public partial class PasswordList : Window
     {
+        LoginManagement loginManagement = new LoginManagement();
+
         public PasswordList()
         {
             InitializeComponent();
 
-            LastSuccesfulLoginDateLabel.Content += LoginManagement.GetLastLogin(Storage.GetUser().Id, true) == null ? "-" : LoginManagement.GetLastLogin(Storage.GetUser().Id, true).Time.ToString();
-            LastUnsuccesfulLoginDateLabel.Content += LoginManagement.GetLastLogin(Storage.GetUser().Id, false) == null ? "-" : LoginManagement.GetLastLogin(Storage.GetUser().Id, false).Time.ToString();
+            LastSuccesfulLoginDateLabel.Content += loginManagement.GetLastLogin(Storage.GetUser().Id, true) == null ? "-" : loginManagement.GetLastLogin(Storage.GetUser().Id, true).Time.ToString();
+            LastUnsuccesfulLoginDateLabel.Content += loginManagement.GetLastLogin(Storage.GetUser().Id, false) == null ? "-" : loginManagement.GetLastLogin(Storage.GetUser().Id, false).Time.ToString();
 
             Storage.StoredPasswordsList = PasswordsManagement.GetAllUserPasswords();
 

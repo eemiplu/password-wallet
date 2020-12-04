@@ -1,4 +1,5 @@
-﻿using PasswordWallet.DbModels;
+﻿using PasswordWallet.Controllers.Interfaces;
+using PasswordWallet.DbModels;
 using System;
 using System.Data.Entity;
 using System.Linq;
@@ -6,7 +7,7 @@ using System.Windows;
 
 namespace PasswordWallet.Controllers
 {
-    public class UsersController
+    public class UsersController : IUsersController
     {
         private DBContext db = new DBContext();
 

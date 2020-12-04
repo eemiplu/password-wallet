@@ -70,5 +70,13 @@ namespace PasswordWallet.Controllers
         {
             return new ObservableCollection<Login>(db.Logins.Where(p => p.IdIpAddress == ipAddressId));
         }
+
+        public Login GetLastIncorrectLogin(int userId)
+        {
+            var time = db.Logins.Where(p => p.IdUser == userId && p.Correct == false).Select(p => p.Time).DefaultIfEmpty();//.Max(x => x.Time);
+            if (time == null)
+                return null;
+            return db.Logins.Where(p => p.IdUser == userId && p.Correct == false && p.Time == time.Max()).FirstOrDefault();
+        }
     }
 }

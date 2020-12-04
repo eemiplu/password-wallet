@@ -3,9 +3,9 @@ using System.Windows;
 using PasswordWallet.DbModels;
 using PasswordWallet.Views;
 using PasswordWallet.Logic;
-using PasswordWallet.Cryptography;
 using PasswordWallet.Logic.HelperClasses;
 using PasswordWallet.Database.DbModels;
+using System.Windows.Threading;
 
 namespace PasswordWallet
 {
@@ -13,6 +13,9 @@ namespace PasswordWallet
     {
         String _login;
         String _password;
+        DateTime lastLoginTrialTime = DateTime.MinValue;
+        int verificationTime;
+        DispatcherTimer dispatcherTimer;
 
         public LoginWindow()
         {
@@ -31,7 +34,9 @@ namespace PasswordWallet
 
         private void LogInButton_Click(object sender, RoutedEventArgs e)
         {
+            LoginManagement loginManagement = new LoginManagement();
             string ip = IpManager.GetLocalIP();
+            UserManagement userManagement = new UserManagement();
             IpAddressManagement ipManagement = new IpAddressManagement();
             IPAddress ipAddress = ipManagement.AddNewIp(ip);
             Storage.IpAddress = ipAddress;
@@ -39,34 +44,100 @@ namespace PasswordWallet
             _login = LoginTextBox.Text;
             _password = PasswordTextBox.Password;
 
-            if (VerifyUser())
+            if (loginManagement.CheckIfIPAddressIsBlocked(Storage.IpAddress))
             {
-                PasswordList window = new PasswordList();
-                window.Show();
-                this.Close();
+                MessageTextBlock.Text = "This IP address is permanently blocked \nbecause of 4 failed login trials.";
+                MessageTextBlock.Visibility = Visibility.Visible;
             }
+            else
+            {
+                int verTime = loginManagement.UserVerificationTimeInSeconds(Storage.IpAddress.IpAddress, _login);
+
+                if (verTime > 0 && lastLoginTrialTime == DateTime.MinValue)
+                {
+                    lastLoginTrialTime = DateTime.Now;
+
+                    verificationTime = verTime;
+
+                    int incorrectTrials = Math.Max(Storage.IpAddress.IncorrectLoginTrials, userManagement.getUser(_login).IncorrectLogins);
+
+                    MessageTextBlock.Text = "You provided incorrect login data " + incorrectTrials
+                        + " times. \nLogin verification is now extended to " + verTime + "s.";
+                    MessageTextBlock.Visibility = Visibility.Visible;
+                    
+                    dispatcherTimer = new DispatcherTimer();
+                    dispatcherTimer.Tick += (sender1, e1) => dispatcherTimer_Tick(sender, e, incorrectTrials); //new EventHandler(dispatcherTimer_Tick);
+                    dispatcherTimer.Interval = new TimeSpan(0, 0, 1);
+                    dispatcherTimer.Start();
+                }
+
+                if ((verTime > 0 && lastLoginTrialTime.AddSeconds(verTime) < DateTime.Now) || verTime == 0)
+                {
+                    MessageTextBlock.Visibility = Visibility.Hidden;
+                    lastLoginTrialTime = DateTime.MinValue;
+
+                    if (VerifyUser())
+                    {
+                        PasswordList window = new PasswordList();
+                        window.Show();
+                        this.Close();
+                    }
+                }
+            }
+        }
+
+        private void dispatcherTimer_Tick(object sender, EventArgs e, int incorrectTrials)
+        {
+            verificationTime--;
+
+            MessageTextBlock.Text = "You provided incorrect login data " + incorrectTrials
+                        + " times. \nLogin verification is now extended to " + verificationTime + "s.";
+
+            if (verificationTime == 0)
+            {
+                dispatcherTimer.Stop();
+                MessageTextBlock.Visibility = Visibility.Hidden;
+            }
+        }
+
+        private bool validateForm()
+        {
+            if (!isPasswordValid(_password) || String.IsNullOrEmpty(_login))
+            {
+                return false;
+            }
+
+            return true;
         }
 
         private bool VerifyUser()
         {
+            LoginManagement loginManagement = new LoginManagement();
             UserManagement userManagement = new UserManagement();
 
-            if (!isPasswordValid(_password) || String.IsNullOrEmpty(_login))
+            if (!validateForm())
             {
                 MessageBox.Show("Fill in the fields correctly. Password must be at least 8 characters long.", "Incorrect data", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return false;
             }
 
-            User user = userManagement.Login(_login.Trim(), _password);
+            User loggedUser = loginManagement.Login(_login.Trim(), _password);
 
-            if (user != null)
+            if (loggedUser != null)
             {
-                Storage.CreateUser(user);
+                Storage.CreateUser(loggedUser);
                 return true;
             }
 
             MessageBox.Show("Invalid login or password.", "User not found", MessageBoxButton.OK, MessageBoxImage.Warning);
             return false;
+        }
+
+        private delegate void NoArgDelegate();
+
+        public static void Refresh(DependencyObject obj)
+        {
+            obj.Dispatcher.Invoke(System.Windows.Threading.DispatcherPriority.ApplicationIdle, (NoArgDelegate)delegate { });
         }
 
         private bool isPasswordValid(String password)

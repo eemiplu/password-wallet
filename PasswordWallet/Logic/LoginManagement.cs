@@ -1,5 +1,10 @@
 ﻿using PasswordWallet.Controllers;
+using PasswordWallet.Controllers.Interfaces;
+using PasswordWallet.Cryptography;
 using PasswordWallet.Database.DbModels;
+using PasswordWallet.DbModels;
+using System;
+using System.Collections.ObjectModel;
 using System.Linq;
 
 namespace PasswordWallet.Logic
@@ -7,8 +12,75 @@ namespace PasswordWallet.Logic
     public class LoginManagement
     {
         private static LoginsController _loginsController = new LoginsController();
+        private static IpAddressController _ipAddressController = new IpAddressController();
+        private static UsersController _usersController = new UsersController();
 
-        public static Login GetLastLogin(int userId, bool isSuccesful = true)
+        //IipAddressController _ipAddressController = new IpAddressController();
+        //IUsersController _usersController = new UsersController();
+
+        //public LoginManagement()
+        //{
+        //    this._ipAddressController = new IpAddressController();
+        //    this._usersController = new UsersController();
+        //}
+
+        //public LoginManagement(IipAddressController ipC, IUsersController iuC)
+        //{
+        //    this._ipAddressController = ipC;
+        //    this._usersController = iuC;
+
+        //}
+
+        public User Login(String login, String password)
+        {
+            User user = _usersController.GetUser(login);
+            EncryptionManager encryptionManager = new EncryptionManager();
+            String encryptedPassword;
+
+            if (user == null)
+            {
+                return user;
+            }
+
+            Login loginData = new Login(user.Id, DateTime.Now, Storage.IpAddress.Id);
+
+            encryptedPassword = encryptionManager.EncryptPassword(password, user.IsPasswordStoredAsHash, user.Salt);
+
+            if (!user.PasswordHash.ToString().Equals(encryptedPassword))
+            {
+                incrementIncorrectLoginTrials(user);
+
+                loginData.Correct = false;
+                user = null;
+            }
+            else
+            {
+                resetIncorrectLoginTrialsNumber(user);
+            }
+
+            //if (!CheckIfAccountIsBlocked(login))
+                _loginsController.AddLogin(loginData);
+
+            return user;
+        }
+
+        private void incrementIncorrectLoginTrials(User user)
+        {
+            user.IncorrectLogins += 1;
+            _usersController.UpdateUser(user);
+            Storage.IpAddress.IncorrectLoginTrials += 1;
+            _ipAddressController.UpdateIP(Storage.IpAddress);
+        }
+
+        private void resetIncorrectLoginTrialsNumber(User user)
+        {
+            user.IncorrectLogins = 0;
+            _usersController.UpdateUser(user);
+            Storage.IpAddress.IncorrectLoginTrials = 0;
+            _ipAddressController.UpdateIP(Storage.IpAddress);
+        }
+
+        public Login GetLastLogin(int userId, bool isSuccesful = true)
         {
             Login lastLogin;
 
@@ -23,13 +95,7 @@ namespace PasswordWallet.Logic
 
             if (lastLogin != null)
             {
-                foreach (Login loginData in allUserLoginData)
-                {
-                    if (loginData.Correct == isSuccesful && loginData.Time > lastLogin.Time)
-                    {
-                        lastLogin = loginData;
-                    }
-                }
+                lastLogin = findLastUserLogin(allUserLoginData, isSuccesful);
             }
             else
             {
@@ -39,53 +105,67 @@ namespace PasswordWallet.Logic
             return lastLogin;
         }
 
-        //public static Login AddNewLogin(Login login)
-        //{
+        public Login findLastUserLogin(ObservableCollection<Login> userLoginData, bool isSuccesful)
+        {
+            var lastLogin = userLoginData.FirstOrDefault(u => u.Correct == isSuccesful);
 
+            foreach (Login loginData in userLoginData)
+            {
+                if (loginData.Correct == isSuccesful && loginData.Time > lastLogin.Time)
+                {
+                    lastLogin = loginData;
+                }
+            }
+            return lastLogin;
+        }
 
-        //    login.IdUser = Storage.GetUser().Id;
+        public bool CheckIfIPAddressIsBlocked(IPAddress iPAddress)
+        {
+            if (iPAddress.IncorrectLoginTrials >= 4)
+            {
+                return true;
+            }
+            return false;
+        }
 
+        public bool CheckIfAccountIsBlocked(string login)
+        {
+            var user = _usersController.GetUser(login);
+            var loginData = _loginsController.GetLastIncorrectLogin(user.Id);
+            if (loginData == null)
+                return false;
 
+            if (user.IncorrectLogins >= 4) // && loginData.Time.AddMinutes(2) > DateTime.Now
+            {
+                return true;
+            }
+            return false;
+        }
 
-        //    EncryptionManager encryptionManager = new EncryptionManager();
-        //    password.PasswordHash = encryptionManager.AESEncrypt(Storage.GetUser().Salt, password.PasswordHash);
+        public int UserVerificationTimeInSeconds(string ip, string login)
+        {
+            var iPAddress = Storage.IpAddress;
+            var user = _usersController.GetUser(login);
 
-        //    password = _passwordsController.AddPassword(password);
+            if (user == null)
+                return 0;
 
-        //    return login;
-        //}
+            if (iPAddress.IncorrectLoginTrials >= 4)
+                return -1;
 
-        //public static void DeletePassword(int id)
-        //{
-        //    _passwordsController.DeletePassword(id);
-        //}
+            return Math.Max(getVerificationTime(user.IncorrectLogins), getVerificationTime(iPAddress.IncorrectLoginTrials));
+        }
 
-        //public static Password ChangePassword(Password password)
-        //{
-        //    EncryptionManager encryptionManager = new EncryptionManager();
-        //    password.PasswordHash = encryptionManager.AESEncrypt(Storage.GetUser().Salt, password.PasswordHash);
+        public int getVerificationTime(int incorrectLoginTrials)
+        {
+            if (incorrectLoginTrials == 2)
+                return 5;
+            if (incorrectLoginTrials == 3)
+                return 10;
+            if (incorrectLoginTrials >= 4)
+                return 120;
 
-        //    password = _passwordsController.UpdatePassword(password);
-
-        //    return password;
-        //}
-
-        //public static ObservableCollection<Password> GetAllUserPasswords()
-        //{
-        //    return _passwordsController.GetAllPasswordsForUser(Storage.GetUser().Id);
-        //}
-
-        //public static void UpdateAllUserPasswords(String oldSalt, String newSalt)
-        //{
-        //    foreach (Password pass in Storage.StoredPasswordsList)
-        //    {
-        //        EncryptionManager encryptionManager = new EncryptionManager();
-        //        string plainPassword = encryptionManager.AESDecrypt(oldSalt, pass.PasswordHash);
-
-        //        pass.PasswordHash = encryptionManager.AESEncrypt(newSalt, plainPassword);
-
-        //        _passwordsController.UpdatePassword(pass);
-        //    }
-        //}
+            return 0;
+        }
     }
 }

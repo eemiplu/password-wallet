@@ -1,4 +1,5 @@
-﻿using PasswordWallet.Database.DbModels;
+﻿using PasswordWallet.Controllers.Interfaces;
+using PasswordWallet.Database.DbModels;
 using PasswordWallet.DbModels;
 using System;
 using System.Collections.Generic;
@@ -12,7 +13,7 @@ using System.Windows;
 
 namespace PasswordWallet.Controllers
 {
-    public class IpAddressController
+    public class IpAddressController : IipAddressController
     {
         private DBContext db = new DBContext();
 

@@ -17,7 +17,7 @@ namespace PasswordWallet.Logic
         {
             User user = _usersController.GetUser(login);
             EncryptionManager encryptionManager = new EncryptionManager();
-            String encryptedPassword = "";
+            String encryptedPassword;
             String salt;
 
             if (user != null)
@@ -35,52 +35,9 @@ namespace PasswordWallet.Logic
             return user;
         }
 
-        public User Login(String login, String password)
+        public User getUser(string login)
         {
-            User user = _usersController.GetUser(login);
-            EncryptionManager encryptionManager = new EncryptionManager();
-            String encryptedPassword;
-
-            if (user == null)
-            {
-                return user;
-            }
-
-            Login loginData = new Login(user.Id, DateTime.Now, Storage.IpAddress.Id);
-
-            encryptedPassword = encryptionManager.EncryptPassword(password, user.IsPasswordStoredAsHash, user.Salt);
-
-            if (!user.PasswordHash.ToString().Equals(encryptedPassword))
-            {
-                incrementIncorrectLoginTrials(user);
-
-                loginData.Correct = false;
-                user = null;
-            }
-            else
-            {
-                resetIncorrectLoginTrialsNumber(user);
-            }
-
-            _loginsController.AddLogin(loginData);
-
-            return user;
-        }
-
-        private void incrementIncorrectLoginTrials(User user)
-        {
-            user.IncorrectLogins += 1;
-            _usersController.UpdateUser(user);
-            Storage.IpAddress.IncorrectLoginTrials += 1;
-            _ipAddressController.UpdateIP(Storage.IpAddress);
-        }
-
-        private void resetIncorrectLoginTrialsNumber(User user)
-        {
-            user.IncorrectLogins = 0;
-            _usersController.UpdateUser(user);
-            Storage.IpAddress.IncorrectLoginTrials = 0;
-            _ipAddressController.UpdateIP(Storage.IpAddress);
+            return _usersController.GetUser(login);
         }
 
         public User ChangePassword(String password, bool passwordShouldBeKeptAsHash)

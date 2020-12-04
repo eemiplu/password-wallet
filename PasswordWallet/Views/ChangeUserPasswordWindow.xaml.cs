@@ -20,6 +20,7 @@ namespace PasswordWallet.Views
 
         private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
+            LoginManagement loginManagement = new LoginManagement();
             UserManagement userManagement = new UserManagement();
 
             _oldPass = OldPasswordTextBox.Password;
@@ -27,7 +28,7 @@ namespace PasswordWallet.Views
             _repeatedPass = RepeatedPasswordTextBox.Password;
             _passwordShouldBeStoredAsHash = Sha512Radio.IsChecked == true ? true : false;
 
-            if (userManagement.Login(Storage.GetUser().Login, _oldPass) == null)
+            if (loginManagement.Login(Storage.GetUser().Login, _oldPass) == null)
             {
                 MessageBox.Show("Password is incorrect.", "Wrong password", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
