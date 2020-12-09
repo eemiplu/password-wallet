@@ -1,4 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using PasswordWallet.Database.DbModels;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace PasswordWallet.DbModels
@@ -30,5 +32,6 @@ namespace PasswordWallet.DbModels
         public string Login { get; set; }
 
         public User User { get; set; }
+        public ICollection<SharedPassword> SharedPasswords { get; set; }
     }
 }

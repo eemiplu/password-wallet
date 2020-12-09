@@ -36,7 +36,6 @@ namespace PasswordWallet
         {
             LoginManagement loginManagement = new LoginManagement();
             string ip = IpManager.GetLocalIP();
-            UserManagement userManagement = new UserManagement();
             IpAddressManagement ipManagement = new IpAddressManagement();
             IPAddress ipAddress = ipManagement.AddNewIp(ip);
             Storage.IpAddress = ipAddress;
@@ -52,24 +51,6 @@ namespace PasswordWallet
             else
             {
                 int verTime = loginManagement.UserVerificationTimeInSeconds(Storage.IpAddress.IpAddress, _login);
-
-                if (verTime > 0 && lastLoginTrialTime == DateTime.MinValue)
-                {
-                    lastLoginTrialTime = DateTime.Now;
-
-                    verificationTime = verTime;
-
-                    int incorrectTrials = Math.Max(Storage.IpAddress.IncorrectLoginTrials, userManagement.getUser(_login).IncorrectLogins);
-
-                    MessageTextBlock.Text = "You provided incorrect login data " + incorrectTrials
-                        + " times. \nLogin verification is now extended to " + verTime + "s.";
-                    MessageTextBlock.Visibility = Visibility.Visible;
-                    
-                    dispatcherTimer = new DispatcherTimer();
-                    dispatcherTimer.Tick += (sender1, e1) => dispatcherTimer_Tick(sender, e, incorrectTrials); //new EventHandler(dispatcherTimer_Tick);
-                    dispatcherTimer.Interval = new TimeSpan(0, 0, 1);
-                    dispatcherTimer.Start();
-                }
 
                 if ((verTime > 0 && lastLoginTrialTime.AddSeconds(verTime) < DateTime.Now) || verTime == 0)
                 {
@@ -91,7 +72,7 @@ namespace PasswordWallet
             verificationTime--;
 
             MessageTextBlock.Text = "You provided incorrect login data " + incorrectTrials
-                        + " times. \nLogin verification is now extended to " + verificationTime + "s.";
+                        + " times. \nTry again in " + verificationTime + "s.";
 
             if (verificationTime == 0)
             {
@@ -125,11 +106,48 @@ namespace PasswordWallet
 
             if (loggedUser != null)
             {
+                Storage.applicationMode = Storage.Mode.Read;
                 Storage.CreateUser(loggedUser);
                 return true;
             }
+            else
+            {
+                MessageBox.Show("Invalid login or password.", "User not found", MessageBoxButton.OK, MessageBoxImage.Warning);
 
-            MessageBox.Show("Invalid login or password.", "User not found", MessageBoxButton.OK, MessageBoxImage.Warning);
+                string ip = IpManager.GetLocalIP();
+                IpAddressManagement ipManagement = new IpAddressManagement();
+                IPAddress ipAddress = ipManagement.AddNewIp(ip);
+                Storage.IpAddress = ipAddress;
+
+                if (!loginManagement.CheckIfIPAddressIsBlocked(Storage.IpAddress))
+                {
+                    int verTime = loginManagement.UserVerificationTimeInSeconds(Storage.IpAddress.IpAddress, _login);
+
+                    if (verTime > 0 && lastLoginTrialTime == DateTime.MinValue)
+                    {
+                        lastLoginTrialTime = DateTime.Now;
+
+                        verificationTime = verTime;
+
+                        int incorrectTrials = Math.Max(Storage.IpAddress.IncorrectLoginTrials, userManagement.getUser(_login).IncorrectLogins);
+
+                        MessageTextBlock.Text = "You provided incorrect login data " + incorrectTrials
+                            + " times. \nTry again in " + verificationTime + "s.";
+                        MessageTextBlock.Visibility = Visibility.Visible;
+
+                        dispatcherTimer = new DispatcherTimer();
+                        dispatcherTimer.Tick += (sender, e) => dispatcherTimer_Tick(sender, e, incorrectTrials); //new EventHandler(dispatcherTimer_Tick);
+                        dispatcherTimer.Interval = new TimeSpan(0, 0, 1);
+                        dispatcherTimer.Start();
+                    }
+                }
+                else
+                {
+                    MessageTextBlock.Text = "This IP address is permanently blocked \nbecause of 4 failed login trials.";
+                    MessageTextBlock.Visibility = Visibility.Visible;
+                }
+            }
+
             return false;
         }
 

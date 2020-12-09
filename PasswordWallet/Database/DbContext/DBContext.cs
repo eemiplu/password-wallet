@@ -9,6 +9,7 @@ namespace PasswordWallet.DbModels
 
         public DbSet<User> Users { get; set; }
         public DbSet<Password> Passwords { get; set; }
+        public DbSet<SharedPassword> SharedPasswords { get; set; }
         public DbSet<IPAddress> IPAddresses { get; set; }
         public DbSet<Login> Logins { get; set; }
     }

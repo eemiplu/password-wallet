@@ -25,7 +25,17 @@ namespace PasswordWallet.Views
             AddPasswordButton.Click += AddPasswordButton_Click;
             EditMasterPasswordButton.Click += EditMasterPasswordButton_Click;
             LockedIPAddressesButton.Click += LockedIPAddressesButton_Click;
+            SwitchModeButton.Click += SwitchModeButton_Click;
             LogOutButton.Click += LogOutButton_Click;
+        }
+
+        private void SwitchModeButton_Click(object sender, RoutedEventArgs e)
+        {
+            SwitchModeButton.Content = "Switch to " + Storage.applicationMode.ToString().ToLower() + " mode";
+            
+            Storage.applicationMode = Storage.applicationMode.Equals(Storage.Mode.Read) ? Storage.Mode.Write : Storage.Mode.Read;
+
+            AppModeLabel.Content = "You are in " + Storage.applicationMode.ToString().ToLower() + " mode.";
         }
 
         private void LockedIPAddressesButton_Click(object sender, RoutedEventArgs e)
@@ -37,6 +47,7 @@ namespace PasswordWallet.Views
         private void LogOutButton_Click(object sender, RoutedEventArgs e)
         {
             Storage.DeleteUser();
+            Storage.applicationMode = Storage.Mode.Read;
             Storage.StoredPasswordsList = new ObservableCollection<Password>();
 
             LoginWindow window = new LoginWindow();
@@ -58,19 +69,55 @@ namespace PasswordWallet.Views
 
         private void ChangePasswordButton_Click(object sender, RoutedEventArgs e)
         {
+            if (Storage.applicationMode.Equals(Storage.Mode.Write))
+            {
+                Password password = (Password)((Button)sender).DataContext;
+
+                if (Storage.GetUser().Id == password.IdUser)
+                {
+                    EditPasswordWindow window = new EditPasswordWindow(password);
+                    window.Show();
+                }
+                else
+                {
+                    MessageBox.Show("You have to be an owner to edit passwords.", "Editing not allowed", MessageBoxButton.OK, MessageBoxImage.Warning);
+                }
+                
+            }
+            else
+            {
+                MessageBox.Show("You have to switch to write mode to edit passwords.", "Read mode is active", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+        }
+        
+        private void SharePasswordButton_Click(object sender, RoutedEventArgs e)
+        {
             Password password = (Password)((Button)sender).DataContext;
 
-            EditPasswordWindow window = new EditPasswordWindow(password);
+            SharePasswordWindow window = new SharePasswordWindow(password.Id);
             window.Show();
         }
 
         private void DeletePasswordButton_Click(object sender, RoutedEventArgs e)
         {
-            Password password = (Password)((Button)sender).DataContext;
+            if (Storage.applicationMode.Equals(Storage.Mode.Write))
+            {
+                Password password = (Password)((Button)sender).DataContext;
 
-            Storage.StoredPasswordsList.Remove(password);
-
-            PasswordsManagement.DeletePassword(password.Id);
+                if (Storage.GetUser().Id == password.IdUser)
+                {
+                    Storage.StoredPasswordsList.Remove(password);
+                    PasswordsManagement.DeletePassword(password.Id);
+                }
+                else
+                {
+                    MessageBox.Show("You have to be an owner to delete passwords.", "Deleting not allowed", MessageBoxButton.OK, MessageBoxImage.Warning);
+                }               
+            }
+            else
+            {
+                MessageBox.Show("You have to switch to write mode to delete passwords.", "Read mode is active", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
         }
 
         private void AddPasswordButton_Click(object sender, RoutedEventArgs e)

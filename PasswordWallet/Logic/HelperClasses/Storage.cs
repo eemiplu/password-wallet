@@ -10,6 +10,8 @@ namespace PasswordWallet.Logic
 
         public static IPAddress IpAddress;
 
+        public static Mode applicationMode = Mode.Read;
+
         public static ObservableCollection<Password> StoredPasswordsList = new ObservableCollection<Password>();
 
         public static User CreateUser(User user)
@@ -30,6 +32,12 @@ namespace PasswordWallet.Logic
         public static User DeleteUser()
         {
             return _user = null;
+        }
+
+        public enum Mode
+        {
+            Read,
+            Write
         }
 
         //public static IPAddress SaveIpAddress(IPAddress ipAddress)

@@ -7,13 +7,13 @@ namespace PasswordWallet.Migrations
     using System.Resources;
     
     [GeneratedCode("EntityFramework.Migrations", "6.4.4")]
-    public sealed partial class init : IMigrationMetadata
+    public sealed partial class user_change : IMigrationMetadata
     {
-        private readonly ResourceManager Resources = new ResourceManager(typeof(init));
+        private readonly ResourceManager Resources = new ResourceManager(typeof(user_change));
         
         string IMigrationMetadata.Id
         {
-            get { return "202011281441136_init"; }
+            get { return "202012082316047_user_change"; }
         }
         
         string IMigrationMetadata.Source

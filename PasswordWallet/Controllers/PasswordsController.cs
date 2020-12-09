@@ -58,9 +58,23 @@ namespace PasswordWallet.Controllers
             return null;
         }
 
+        public Password GetPassword(int id)
+        {
+            Password password = db.Passwords.FirstOrDefault(p => p.Id == id);
+
+            return password;
+        }
+
         public ObservableCollection<Password> GetAllPasswordsForUser(int id)
         {
-            return new ObservableCollection<Password>(db.Passwords.Where(p => p.IdUser == id));
+            ObservableCollection<Password> allUserPasswords = new ObservableCollection<Password>(db.Passwords.Where(p => p.IdUser == id));
+
+            foreach (var pass in db.SharedPasswords.Where(p => p.IdUser == id))
+            {
+                allUserPasswords.Add(db.Passwords.FirstOrDefault(p => p.Id == pass.IdPassword));
+            }
+
+            return allUserPasswords;
         }
     }
 }
