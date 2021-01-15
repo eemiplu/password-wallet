@@ -45,8 +45,14 @@ namespace PasswordWallet.DbModels
         [Column("IncorrectLogins", Order = 6)]
         public int IncorrectLogins { get; set; } = 0;
 
+        [Required]
+        [Column("Deleted", Order = 7)]
+        public bool Deleted { get; set; } = false;
+
         public ICollection<Password> Passwords { get; set; }
         public ICollection<Login> Logins { get; set; }
         public ICollection<SharedPassword> SharedPasswords { get; set; }
+        public ICollection<FunctionRun> FunctionRuns { get; set; }
+        public ICollection<DataChange> DataChanges { get; set; }
     }
 }

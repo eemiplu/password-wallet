@@ -31,6 +31,9 @@ namespace PasswordWallet.DbModels
         [Column("Login", Order = 5)]
         public string Login { get; set; }
 
+        [Column("Deleted", Order = 6)]
+        public bool Deleted { get; set; } = false;
+
         public User User { get; set; }
         public ICollection<SharedPassword> SharedPasswords { get; set; }
     }

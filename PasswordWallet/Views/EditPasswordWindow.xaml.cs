@@ -9,6 +9,7 @@ namespace PasswordWallet.Views
     public partial class EditPasswordWindow : Window
     {
         Password _password = new Password();
+        Password _previous = new Password();
 
         public EditPasswordWindow(Password password = null)
         {
@@ -24,6 +25,7 @@ namespace PasswordWallet.Views
                 DescriptionTextBox.Text = password.Description;
 
                 _password = password;
+                _previous = new Password() { Id = password.Id, PasswordHash = password.PasswordHash, IdUser = password.IdUser, WebAddress = password.WebAddress, Description = password.Description, Login = password.Login, Deleted = password.Deleted };
             }
 
             SaveButton.Click += SaveButton_Click;
@@ -40,7 +42,7 @@ namespace PasswordWallet.Views
 
             if (_password.Id > 0 )
             {
-                if (PasswordsManagement.ChangePassword(_password) != null)
+                if (PasswordsManagement.ChangePassword(_previous, _password) != null)
                 {
                     Storage.StoredPasswordsList.Remove(Storage.StoredPasswordsList.First(p => p.Id == _password.Id));
                     Storage.StoredPasswordsList.Add(_password);

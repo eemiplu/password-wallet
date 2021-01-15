@@ -1,7 +1,9 @@
-﻿using PasswordWallet.DbModels;
+﻿using PasswordWallet.Database.DbModels;
+using PasswordWallet.DbModels;
 using System;
 using System.Collections.ObjectModel;
 using System.Data.Entity;
+using System.Data.Entity.Migrations;
 using System.Linq;
 using System.Windows;
 
@@ -28,24 +30,31 @@ namespace PasswordWallet.Controllers
             return null;
         }
 
-        public void DeletePassword(int id)
+        public Password DeletePassword(int id)
         {
             try
             {
-                db.Passwords.Remove(db.Passwords.FirstOrDefault(p => p.Id == id));
+                Password password = db.Passwords.FirstOrDefault(p => p.Id == id);
+                password.Deleted = true;
+
+                db.Entry(password).State = EntityState.Modified;
                 db.SaveChanges();
+
+                return password;
             }
             catch (Exception ex)
             {
                 MessageBox.Show("Exception occured: " + ex.Message, "Deleting password from database failed", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
+
+            return null;
         }
 
         public Password UpdatePassword(Password password)
         {
             try
             {
-                db.Entry(password).State = EntityState.Modified;
+                db.Set<Password>().AddOrUpdate(password);
                 db.SaveChanges();
 
                 return password;
@@ -67,11 +76,15 @@ namespace PasswordWallet.Controllers
 
         public ObservableCollection<Password> GetAllPasswordsForUser(int id)
         {
-            ObservableCollection<Password> allUserPasswords = new ObservableCollection<Password>(db.Passwords.Where(p => p.IdUser == id));
+            ObservableCollection<Password> allUserPasswords = new ObservableCollection<Password>(db.Passwords.Where(p => p.IdUser == id && p.Deleted == false));
 
             foreach (var pass in db.SharedPasswords.Where(p => p.IdUser == id))
             {
-                allUserPasswords.Add(db.Passwords.FirstOrDefault(p => p.Id == pass.IdPassword));
+                var password = db.Passwords.FirstOrDefault(p => p.Id == pass.IdPassword && p.Deleted == false);
+                if (password != null)
+                {
+                    allUserPasswords.Add(password);
+                }
             }
 
             return allUserPasswords;

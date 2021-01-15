@@ -2,6 +2,7 @@
 using PasswordWallet.Cryptography;
 using PasswordWallet.Database.DbModels;
 using PasswordWallet.DbModels;
+using PasswordWallet.Logic.HelperClasses;
 using System;
 using System.Collections.ObjectModel;
 
@@ -15,8 +16,14 @@ namespace PasswordWallet.Logic
 
         private static UsersController _usersController = new UsersController();
 
+        private static DataChangesController _dataChangesController = new DataChangesController();
+
+        private static FunctionRunsController _functionRunsController = new FunctionRunsController();
+
         public static Password AddNewPassword(Password password)
         {
+            RecordSerializer serializer = new RecordSerializer();
+
             password.IdUser = Storage.GetUser().Id;
 
             EncryptionManager encryptionManager = new EncryptionManager();
@@ -24,20 +31,35 @@ namespace PasswordWallet.Logic
 
             password = _passwordsController.AddPassword(password);
 
+            _functionRunsController.Add(new FunctionRun() { IdUser = Storage.GetUser().Id, Time = DateTime.Now, IdFunction = (int)Enums.Function.AddPassword });
+            _dataChangesController.Add(new DataChange() { IdUser = Storage.GetUser().Id, IdModifiedRecord = password.Id, PresentValueOfRecord = serializer.PasswordObjectToString(password), Time = DateTime.Now, IdActionType = (int)Enums.ActionType.create, IdTableName = (int)Enums.TableName.Passwords });
+
             return password;
         }
 
         public static void DeletePassword(int id)
         {
+            RecordSerializer serializer = new RecordSerializer();
+
+            Password password = _passwordsController.GetPassword(id);
+
             _passwordsController.DeletePassword(id);
+
+            _functionRunsController.Add(new FunctionRun() { IdUser = Storage.GetUser().Id, Time = DateTime.Now, IdFunction = (int)Enums.Function.DeletePassword });
+            _dataChangesController.Add(new DataChange() { IdUser = Storage.GetUser().Id, IdModifiedRecord = id, PreviousValueOfRecord = serializer.PasswordObjectToString(password), Time = DateTime.Now, IdActionType = (int)Enums.ActionType.delete, IdTableName = (int)Enums.TableName.Passwords });
         }
 
-        public static Password ChangePassword(Password password)
+        public static Password ChangePassword(Password previous, Password password)
         {
+            RecordSerializer serializer = new RecordSerializer();
+
             EncryptionManager encryptionManager = new EncryptionManager();
             password.PasswordHash = encryptionManager.AESEncrypt(Storage.GetUser().Salt, password.PasswordHash);
 
             password = _passwordsController.UpdatePassword(password);
+
+            _functionRunsController.Add(new FunctionRun() { IdUser = Storage.GetUser().Id, Time = DateTime.Now, IdFunction = (int)Enums.Function.UpdatePassword });
+            _dataChangesController.Add(new DataChange() { IdUser = Storage.GetUser().Id, IdModifiedRecord = password.Id, PreviousValueOfRecord = serializer.PasswordObjectToString(previous), PresentValueOfRecord = serializer.PasswordObjectToString(password), Time = DateTime.Now, IdActionType = (int)Enums.ActionType.update, IdTableName = (int)Enums.TableName.Passwords });
 
             return password;
         }
@@ -71,6 +93,8 @@ namespace PasswordWallet.Logic
                 if (user != null)
                 {
                     sharedPassword = _sharedPasswordsController.AddSharedPassword(new SharedPassword(user.Id, idPasword));
+
+                    _functionRunsController.Add(new FunctionRun() { IdUser = Storage.GetUser().Id, Time = DateTime.Now, IdFunction = (int)Enums.Function.SharePassword });
                 }
                 else
                 {
@@ -79,6 +103,11 @@ namespace PasswordWallet.Logic
             }
 
             return sharedPassword;
+        }
+
+        public static void SaveActionPasswordDisplayed()
+        {
+            _functionRunsController.Add(new FunctionRun() { IdUser = Storage.GetUser().Id, Time = DateTime.Now, IdFunction = (int)Enums.Function.ShowPassword });
         }
     }
 }

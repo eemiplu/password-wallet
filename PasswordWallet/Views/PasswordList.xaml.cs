@@ -26,7 +26,21 @@ namespace PasswordWallet.Views
             EditMasterPasswordButton.Click += EditMasterPasswordButton_Click;
             LockedIPAddressesButton.Click += LockedIPAddressesButton_Click;
             SwitchModeButton.Click += SwitchModeButton_Click;
+            IntroducedChanges.Click += IntroducedChanges_Click;
+            ActionsHistory.Click += ActionsHistory_Click;
             LogOutButton.Click += LogOutButton_Click;
+        }
+
+        private void ActionsHistory_Click(object sender, RoutedEventArgs e)
+        {
+            UserAccessHistoryWindow window = new UserAccessHistoryWindow();
+            window.Show();
+        }
+
+        private void IntroducedChanges_Click(object sender, RoutedEventArgs e)
+        {
+            IntroducedChangesWindow window = new IntroducedChangesWindow();
+            window.Show();
         }
 
         private void SwitchModeButton_Click(object sender, RoutedEventArgs e)
@@ -62,6 +76,8 @@ namespace PasswordWallet.Views
 
             EncryptionManager encryptionManager = new EncryptionManager();
             string plainPassword = encryptionManager.AESDecrypt(Storage.GetUser().Salt, password.PasswordHash);
+
+            PasswordsManagement.SaveActionPasswordDisplayed();
 
             ShowPasswordWindow window = new ShowPasswordWindow(plainPassword);
             window.Show();
